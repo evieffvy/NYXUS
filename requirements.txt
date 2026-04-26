@@ -1,0 +1,21 @@
+# --- Core API ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+python-multipart==0.0.20
+
+# --- LLM / Embeddings ---
+google-genai==1.47.0
+
+# --- Security ---
+slowapi==0.1.9            # rate limiting
+python-jose[cryptography]==3.3.0  # JWT verification (matches NextAuth tokens if needed)
+
+# --- RAG (Phase 5) ---
+pypdf==5.1.0
+
+# --- PII detection (Phase 6) ---
+presidio-analyzer==2.2.355
+presidio-anonymizer==2.2.355
+# spaCy small English model installed via:  python -m spacy download en_core_web_sm
+spacy==3.7.5
