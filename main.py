@@ -6,8 +6,6 @@ Endpoints:
 
 Future phases add: /embed, /scan-code, PII redaction.
 """
-from __future__ import annotations
-
 import json
 import logging
 import os
@@ -18,7 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -148,7 +146,7 @@ def _to_gemini_history(messages: List[ChatMessage]) -> List[genai_types.Content]
 
 @app.post("/chat")
 @limiter.limit(f"{RATE_LIMIT_PER_MINUTE}/minute")
-async def chat(request: Request, body: ChatRequest = Body(...)):
+async def chat(request: Request, body: ChatRequest):
     client: Optional[genai.Client] = getattr(request.app.state, "genai_client", None)
     if client is None:
         raise HTTPException(503, "GEMINI_API_KEY not set on server")
@@ -234,7 +232,7 @@ class EmbedResponse(BaseModel):
 
 @app.post("/embed", response_model=EmbedResponse)
 @limiter.limit(f"{RATE_LIMIT_PER_MINUTE}/minute")
-async def embed(request: Request, body: EmbedRequest = Body(...)):
+async def embed(request: Request, body: EmbedRequest):
     client: Optional[genai.Client] = getattr(request.app.state, "genai_client", None)
     if client is None:
         raise HTTPException(503, "GEMINI_API_KEY not set on server")
@@ -265,7 +263,7 @@ class ScanRequest(BaseModel):
 
 @app.post("/security/pii-scan")
 @limiter.limit(f"{RATE_LIMIT_PER_MINUTE}/minute")
-async def pii_scan(request: Request, body: ScanRequest = Body(...)):
+async def pii_scan(request: Request, body: ScanRequest):
     matches = pii_detect(body.text)
     redacted, _ = pii_redact(body.text, matches)
     return {
@@ -279,7 +277,7 @@ async def pii_scan(request: Request, body: ScanRequest = Body(...)):
 
 @app.post("/security/injection-scan")
 @limiter.limit(f"{RATE_LIMIT_PER_MINUTE}/minute")
-async def injection_scan(request: Request, body: ScanRequest = Body(...)):
+async def injection_scan(request: Request, body: ScanRequest):
     score, findings = injection_analyze(body.text)
     return {
         "score": round(score, 3),
@@ -311,7 +309,7 @@ If no issues, return findings: [].
 
 @app.post("/security/scan-code")
 @limiter.limit(f"{RATE_LIMIT_PER_MINUTE}/minute")
-async def scan_code(request: Request, body: CodeScanRequest = Body(...)):
+async def scan_code(request: Request, body: CodeScanRequest):
     client: Optional[genai.Client] = getattr(request.app.state, "genai_client", None)
     if client is None:
         raise HTTPException(503, "GEMINI_API_KEY not set on server")
