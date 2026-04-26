@@ -36,8 +36,8 @@
 
 :root[data-theme="dark"] {
   /* Pastel dusk — medium-dark lavender, not midnight black */
-  --bg-base: #251c3c;
-  --bg-grad: linear-gradient(135deg, #2f244a 0%, #3c2c5b 25%, #4a376e 50%, #3c2c5b 75%, #2f244a 100%);
+  --bg-base: #1a1229;
+  --bg-grad: linear-gradient(135deg, #211a38 0%, #2c2048 25%, #38295a 50%, #2c2048 75%, #211a38 100%);
   --bg-glow-1: rgba(221, 214, 254, 0.45);   /* soft lavender */
   --bg-glow-2: rgba(244, 178, 215, 0.32);   /* pastel pink */
   --bg-glow-3: rgba(196, 181, 253, 0.55);   /* light violet */
