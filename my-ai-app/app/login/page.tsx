@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/AuthShell";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<AuthShell title="Welcome back"><div /></AuthShell>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") ?? "/";
   const [email, setEmail] = useState("");
