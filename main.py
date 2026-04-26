@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
@@ -91,6 +92,12 @@ async def rate_limit_handler(_: Request, exc: RateLimitExceeded) -> JSONResponse
         status_code=429,
         content={"error": "rate_limited", "detail": str(exc.detail)},
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    log.warning("422 on %s — errors=%s", request.url.path, exc.errors())
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 
 # ---------- Schemas ----------
