@@ -65,7 +65,7 @@ Drop PNG/JPG files into docs/ and reference them here, e.g.:
 │  ─ /api/security-scan  proxies to FastAPI                        │
 │  ─ /api/audit                                                    │
 │                                                                  │
-│  Prisma ORM ───▶ SQLite (dev) / Postgres + pgvector (prod)       │
+│  Prisma ORM ───▶ Postgres (Supabase) via `prisma db push`        │
 └────────────────────────────┬─────────────────────────────────────┘
                              │ HTTPS, CORS-restricted
 ┌────────────────────────────▼─────────────────────────────────────┐
@@ -139,7 +139,7 @@ and JSON metadata. Viewable at `/audit`.
 
 **Backend:** FastAPI, Pydantic v2, slowapi, uvicorn, google-genai SDK
 
-**Data:** Prisma 6, SQLite (dev), Postgres + pgvector (prod-ready schema)
+**Data:** Prisma 6, Postgres (Supabase) — schema synced via `prisma db push` (pgvector-ready)
 
 **AI:** Gemini 2.0 Flash, text-embedding-004
 
@@ -177,8 +177,9 @@ npm install
 
 cp .env.example .env
 # generate AUTH_SECRET:  openssl rand -base64 32
+# DATABASE_URL: get a free Postgres at https://supabase.com → Settings → Database
 
-npx prisma migrate dev    # creates prisma/dev.db
+npx prisma db push    # creates tables in your database
 npm run dev
 ```
 
@@ -195,22 +196,23 @@ Open <http://localhost:3000> → register an account → start chatting.
 | **Supabase** | Postgres + pgvector | 500 MB DB, 50 k monthly active users |
 | **Google AI Studio** | Gemini API | 15 RPM, 1500 req/day |
 
-### Switching Prisma to Postgres for production
+### Database setup
 
-In `prisma/schema.prisma` swap the datasource block:
+The schema in `prisma/schema.prisma` targets Postgres. Set `DATABASE_URL` in
+Vercel to your Supabase pooler connection string, then push the schema:
 
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+```bash
+npx prisma db push
 ```
 
-Set `DATABASE_URL` in Vercel to your Supabase connection string, then run
-`npx prisma migrate deploy` from the build step.
+This project uses `db push` rather than tracked migrations — the schema is
+the single source of truth, which keeps the portfolio focused on app code
+rather than migration housekeeping. For a production team setup you would
+swap to `prisma migrate dev` / `migrate deploy`.
 
 For true vector search (instead of in-process cosine), enable the pgvector
-extension in Supabase and migrate the `embedding String` column to `Unsupported("vector(768)")`.
+extension in Supabase and migrate the `embedding String` column to
+`Unsupported("vector(768)")`.
 
 ---
 
