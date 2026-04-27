@@ -6,6 +6,7 @@ Endpoints:
 
 Future phases add: /embed, /scan-code, PII redaction.
 """
+import asyncio
 import json
 import logging
 import os
@@ -320,19 +321,29 @@ async def scan_code(request: Request, body: CodeScanRequest):
         "Return JSON only."
     )
 
-    try:
-        result = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=user_prompt,
-            config=genai_types.GenerateContentConfig(
-                system_instruction=SCANNER_SYSTEM,
-                response_mime_type="application/json",
-                temperature=0.2,
-            ),
-        )
-    except Exception as e:
-        log.exception("scan failed")
-        raise HTTPException(502, f"scanner error: {e}") from e
+    result = None
+    for attempt in range(3):
+        try:
+            result = client.models.generate_content(
+                model=GEMINI_MODEL,
+                contents=user_prompt,
+                config=genai_types.GenerateContentConfig(
+                    system_instruction=SCANNER_SYSTEM,
+                    response_mime_type="application/json",
+                    temperature=0.0,
+                ),
+            )
+            break
+        except Exception as e:
+            msg = str(e)
+            transient = "UNAVAILABLE" in msg or "RESOURCE_EXHAUSTED" in msg
+            if transient and attempt < 2:
+                await asyncio.sleep(1.5 * (attempt + 1))
+                continue
+            log.exception("scan failed")
+            if transient:
+                raise HTTPException(503, "Gemini is busy, please try again in a moment") from e
+            raise HTTPException(502, f"scanner error: {e}") from e
 
     text = (getattr(result, "text", None) or "").strip()
     try:
