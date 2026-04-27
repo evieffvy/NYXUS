@@ -46,35 +46,35 @@ Drop PNG/JPG files into docs/ and reference them here, e.g.:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  Browser                                                          │
-│  Next.js 16 App Router · React 19 · Tailwind 4                    │
-│  ─ /            multi-chat UI (streaming SSE)                     │
-│  ─ /documents   PDF upload                                        │
-│  ─ /security-scan  OWASP code analyzer                            │
-│  ─ /audit       audit log viewer                                  │
-│  ─ /login /register                                               │
+│  Browser                                                         │
+│  Next.js 16 App Router · React 19 · Tailwind 4                   │
+│  ─ /            multi-chat UI (streaming SSE)                    │
+│  ─ /documents   PDF upload                                       │
+│  ─ /security-scan  OWASP code analyzer                           │
+│  ─ /audit       audit log viewer                                 │
+│  ─ /login /register                                              │
 └────────────────────────────┬─────────────────────────────────────┘
                              │ NextAuth session cookie (JWT)
 ┌────────────────────────────▼─────────────────────────────────────┐
-│  Next.js API routes                                               │
-│  ─ /api/auth/*     NextAuth credentials + Google                  │
-│  ─ /api/register   bcrypt + zod validation                        │
-│  ─ /api/conversations/*   CRUD                                    │
-│  ─ /api/chat       orchestrates retrieval → backend → persists    │
-│  ─ /api/documents  upload, parse, chunk, embed, store             │
-│  ─ /api/security-scan  proxies to FastAPI                         │
-│  ─ /api/audit                                                     │
-│                                                                   │
-│  Prisma ORM ───▶ SQLite (dev) / Postgres + pgvector (prod)        │
+│  Next.js API routes                                              │
+│  ─ /api/auth/*     NextAuth credentials + Google                 │
+│  ─ /api/register   bcrypt + zod validation                       │
+│  ─ /api/conversations/*   CRUD                                   │
+│  ─ /api/chat       orchestrates retrieval → backend → persists   │
+│  ─ /api/documents  upload, parse, chunk, embed, store            │
+│  ─ /api/security-scan  proxies to FastAPI                        │
+│  ─ /api/audit                                                    │
+│                                                                  │
+│  Prisma ORM ───▶ SQLite (dev) / Postgres + pgvector (prod)       │
 └────────────────────────────┬─────────────────────────────────────┘
                              │ HTTPS, CORS-restricted
 ┌────────────────────────────▼─────────────────────────────────────┐
-│  FastAPI (Python 3.11+)                                           │
-│  ─ /chat              Gemini streaming + injection guard + PII    │
-│  ─ /embed             text-embedding-004                          │
-│  ─ /security/pii-scan, /injection-scan                            │
-│  ─ /security/scan-code   OWASP Top 10 (structured JSON)           │
-│  Middleware: slowapi rate-limit, security headers, strict CORS    │
+│  FastAPI (Python 3.11+)                                          │
+│  ─ /chat              Gemini streaming + injection guard + PII   │
+│  ─ /embed             text-embedding-004                         │
+│  ─ /security/pii-scan, /injection-scan                           │
+│  ─ /security/scan-code   OWASP Top 10 (structured JSON)          │
+│  Middleware: slowapi rate-limit, security headers, strict CORS   │
 └──────────────────────────────────────────────────────────────────┘
                              │
                              ▼
