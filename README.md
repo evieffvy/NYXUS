@@ -32,7 +32,7 @@ authentication, retrieval-augmented generation, and applied AI security**.
 | **Auth** | NextAuth v5, bcrypt password hashing, Google OAuth, JWT sessions, route-level middleware |
 | **Frontend** | Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, streaming SSE chat UI, multi-conversation sidebar |
 | **Backend** | FastAPI, async streaming, Pydantic validation, slowapi rate limiting, security headers |
-| **AI** | Google Gemini 2.0 Flash for chat, `text-embedding-004` for retrieval |
+| **AI** | Google Gemini 2.0 Flash for chat, `gemini-embedding-001` for retrieval |
 | **RAG** | PDF/text upload, fixed-size overlap chunking, cosine top-k retrieval, context injection with citations |
 | **Security** | PII redaction (10+ pattern classes incl. Luhn-validated cards), prompt-injection heuristics with weighted scoring, OWASP Top 10 code scanner, append-only audit log, hardened security headers (CSP-ready, HSTS, X-Frame-Options, etc.) |
 
@@ -67,7 +67,7 @@ authentication, retrieval-augmented generation, and applied AI security**.
 ┌────────────────────────────▼─────────────────────────────────────┐
 │  FastAPI (Python 3.11+)                                          │
 │  ─ /chat              Gemini streaming + injection guard + PII   │
-│  ─ /embed             text-embedding-004                         │
+│  ─ /embed             gemini-embedding-001                       │
 │  ─ /security/pii-scan, /injection-scan                           │
 │  ─ /security/scan-code   OWASP Top 10 (structured JSON)          │
 │  Middleware: slowapi rate-limit, security headers, strict CORS   │
@@ -137,7 +137,7 @@ and JSON metadata. Viewable at `/audit`.
 
 **Data:** Prisma 6, Postgres (Supabase) — schema synced via `prisma db push` (pgvector-ready)
 
-**AI:** Gemini 2.0 Flash, text-embedding-004
+**AI:** Gemini 2.0 Flash, gemini-embedding-001
 
 ---
 
