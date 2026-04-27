@@ -19,13 +19,9 @@ authentication, retrieval-augmented generation, and applied AI security**.
 
 ## Screenshots
 
-<!--
-Drop PNG/JPG files into docs/ and reference them here, e.g.:
-| Chat | Security scan |
+| Login | Chat |
 |---|---|
-| ![](docs/chat.png) | ![](docs/security-scan.png) |
--->
-*(coming soon — chat UI, document upload, OWASP scanner, audit log)*
+| ![Login screen](docs/login.png) | ![Chat UI with sidebar](docs/chat.png) |
 
 ---
 
