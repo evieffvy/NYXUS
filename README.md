@@ -1,5 +1,7 @@
 # NYXUS
 
+**Live demo → [nyxus-phi.vercel.app](https://nyxus-phi.vercel.app)**
+
 NYXUS (call it **NYX**) is a full-stack RAG chatbot with **security-first design**: prompt-injection
 defense, PII redaction, OWASP Top 10 code analysis, and an audit trail of every
 sensitive action.
