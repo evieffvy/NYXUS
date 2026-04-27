@@ -50,6 +50,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: { signIn: "/login" },
   providers,
   callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log("[auth] signIn", { provider: account?.provider, email: user?.email });
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) token.id = user.id;
       return token;
@@ -57,6 +61,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token?.id && session.user) session.user.id = token.id as string;
       return session;
+    },
+  },
+  events: {
+    async signIn(message) {
+      console.log("[auth] event signIn", message.user?.email);
+    },
+  },
+  logger: {
+    error: (code, ...message) => {
+      console.error("[auth error]", code, ...message);
+    },
+    warn: (code, ...message) => {
+      console.warn("[auth warn]", code, ...message);
     },
   },
 });
