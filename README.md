@@ -1,6 +1,14 @@
 # NYXUS
 
-**Live demo → [nyxus-phi.vercel.app](https://nyxus-phi.vercel.app)**
+[![CI](https://github.com/evieffvy/NYXUS/actions/workflows/ci.yml/badge.svg)](https://github.com/evieffvy/NYXUS/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Author:** Evie ([@evieffvy](https://github.com/evieffvy))
+**Live demo:** [nyxus-phi.vercel.app](https://nyxus-phi.vercel.app)
+
+> ⏱ The FastAPI backend runs on Render's free tier and sleeps after 15 minutes of
+> inactivity. The first request after idle may take ~30 seconds while the
+> service wakes up.
 
 NYXUS (call it **NYX**) is a full-stack RAG chatbot with **security-first design**: prompt-injection
 defense, PII redaction, OWASP Top 10 code analysis, and an audit trail of every
@@ -8,6 +16,16 @@ sensitive action.
 
 Built to demonstrate end-to-end engineering across **frontend, backend,
 authentication, retrieval-augmented generation, and applied AI security**.
+
+## Screenshots
+
+<!--
+Drop PNG/JPG files into docs/ and reference them here, e.g.:
+| Chat | Security scan |
+|---|---|
+| ![](docs/chat.png) | ![](docs/security-scan.png) |
+-->
+*(coming soon — chat UI, document upload, OWASP scanner, audit log)*
 
 ---
 
