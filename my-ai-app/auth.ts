@@ -54,7 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const existing = await prisma.user.findUnique({ where: { email: user.email } });
         if (!existing) {
           const created = await prisma.user.create({
-            data: { email: user.email, name: user.name ?? null, image: user.image ?? null, emailVerified: new Date() },
+            data: { email: user.email, name: user.name ?? null, image: user.image ?? null },
           });
           user.id = created.id;
         } else {
