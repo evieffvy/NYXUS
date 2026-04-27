@@ -1,7 +1,6 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -44,14 +43,24 @@ if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   trustHost: true,
   pages: { signIn: "/login" },
   providers,
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log("[auth] signIn", { provider: account?.provider, email: user?.email });
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        if (!user.email) return false;
+        const existing = await prisma.user.findUnique({ where: { email: user.email } });
+        if (!existing) {
+          const created = await prisma.user.create({
+            data: { email: user.email, name: user.name ?? null, image: user.image ?? null, emailVerified: new Date() },
+          });
+          user.id = created.id;
+        } else {
+          user.id = existing.id;
+        }
+      }
       return true;
     },
     async jwt({ token, user }) {
@@ -61,19 +70,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token?.id && session.user) session.user.id = token.id as string;
       return session;
-    },
-  },
-  events: {
-    async signIn(message) {
-      console.log("[auth] event signIn", message.user?.email);
-    },
-  },
-  logger: {
-    error: (code, ...message) => {
-      console.error("[auth error]", code, ...message);
-    },
-    warn: (code, ...message) => {
-      console.warn("[auth warn]", code, ...message);
     },
   },
 });
