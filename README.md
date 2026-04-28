@@ -19,9 +19,13 @@ authentication, retrieval-augmented generation, and applied AI security**.
 
 ## Screenshots
 
-| Login | Chat |
+| Login | Chat — RAG retrieval + PII redaction |
 |---|---|
-| ![Login screen](docs/login.png) | ![Chat UI with sidebar](docs/chat.png) |
+| ![Login screen](docs/login.png) | ![Chat answering questions from an uploaded policy doc, with chunk citations and a redacted email](docs/chat.png) |
+
+| OWASP code scanner | Audit log |
+|---|---|
+| ![JSON findings from scanning a vulnerable Flask app — SQL injection, hardcoded secrets, command injection, etc.](docs/security-scan.png) | ![Append-only audit log showing chat.send, conversation.create, security.scan actions with IP and timestamp](docs/audit.png) |
 
 ---
 
