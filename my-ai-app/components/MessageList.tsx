@@ -16,6 +16,7 @@ export type ChatMessage = {
   content: string;
   imageData?: string | null;
   security?: SecurityMeta;
+  errored?: boolean;
 };
 
 export function MessageList({
@@ -24,12 +25,14 @@ export function MessageList({
   ttsSupported,
   ttsActiveId,
   onSpeak,
+  onRetry,
 }: {
   messages: ChatMessage[];
   loading: boolean;
   ttsSupported: boolean;
   ttsActiveId: string | null;
   onSpeak: (id: string, text: string) => void;
+  onRetry?: () => void;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +41,7 @@ export function MessageList({
   }, [messages, loading]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6" role="log" aria-live="polite" aria-atomic="false">
       <div className="mx-auto max-w-2xl space-y-4">
         {messages.length === 0 && <EmptyState />}
         {messages.map((msg, i) => {
@@ -52,10 +55,12 @@ export function MessageList({
               content={msg.content}
               imageData={msg.imageData}
               security={msg.security}
+              errored={msg.errored}
               streaming={streaming}
               ttsSupported={ttsSupported}
               ttsActiveId={ttsActiveId}
               onSpeak={onSpeak}
+              onRetry={isLast && msg.errored ? onRetry : undefined}
             />
           );
         })}
@@ -85,20 +90,24 @@ function MessageBubble({
   content,
   imageData,
   security,
+  errored = false,
   streaming = false,
   ttsSupported = false,
   ttsActiveId = null,
   onSpeak,
+  onRetry,
 }: {
   id: string;
   role: ChatMessage["role"];
   content: string;
   imageData?: string | null;
   security?: SecurityMeta;
+  errored?: boolean;
   streaming?: boolean;
   ttsSupported?: boolean;
   ttsActiveId?: string | null;
   onSpeak?: (id: string, text: string) => void;
+  onRetry?: () => void;
 }) {
   const isPlaying = ttsActiveId === id;
   const isUser = role === "user";
@@ -126,12 +135,12 @@ function MessageBubble({
               isUser ? "rounded-br-md" : "rounded-bl-md"
             }`}
             style={{
-              background: isUser ? "var(--bubble-user)" : "var(--bubble-assistant)",
+              background: errored ? "rgba(244,63,94,0.12)" : isUser ? "var(--bubble-user)" : "var(--bubble-assistant)",
               backdropFilter: "blur(20px) saturate(140%)",
               WebkitBackdropFilter: "blur(20px) saturate(140%)",
-              border: "1px solid var(--border-glass)",
+              border: errored ? "1px solid rgba(244,63,94,0.3)" : "1px solid var(--border-glass)",
               boxShadow: "var(--shadow-card)",
-              color: "var(--text)",
+              color: errored ? "#fb7185" : "var(--text)",
             }}
           >
             {content ? (
@@ -148,7 +157,23 @@ function MessageBubble({
             )}
           </div>
         )}
-        {!isUser && ttsSupported && content && !streaming && onSpeak && (
+        {!isUser && errored && onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="glass self-start rounded-full px-3 py-1 text-[11px] font-medium transition-transform hover:scale-105"
+            style={{ color: "var(--accent-strong)" }}
+          >
+            <span className="inline-flex items-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+              Retry
+            </span>
+          </button>
+        )}
+        {!isUser && ttsSupported && content && !streaming && !errored && onSpeak && (
           <button
             onClick={() => onSpeak(id, content)}
             className="self-start rounded-full px-2 py-1 text-[11px] transition-opacity hover:opacity-100"

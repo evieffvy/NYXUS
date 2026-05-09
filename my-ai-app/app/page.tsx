@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Composer, ComposerImage } from "@/components/Composer";
 import { MessageList, ChatMessage } from "@/components/MessageList";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useSpeechSynthesis, useWakeWord } from "@/components/useSpeech";
 
 type Conversation = { id: string; title: string; updatedAt: string };
@@ -15,11 +16,20 @@ export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Conversation | null>(null);
+  const lastSentRef = useRef<{ text: string; image?: ComposerImage } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Open sidebar by default on desktop only
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setSidebarOpen(window.matchMedia("(min-width: 768px)").matches);
+  }, []);
 
   // Typewriter state — drips text out smoothly so bursty backend tokens feel natural
   const targetRef = useRef("");
@@ -70,11 +80,15 @@ export default function Home() {
   }, [status, router]);
 
   const loadConversations = useCallback(async () => {
-    const res = await fetch("/api/conversations");
-    if (!res.ok) return;
-    const { conversations } = await res.json();
-    setConversations(conversations);
-    return conversations as Conversation[];
+    try {
+      const res = await fetch("/api/conversations");
+      if (!res.ok) return;
+      const { conversations } = await res.json();
+      setConversations(conversations);
+      return conversations as Conversation[];
+    } finally {
+      setConversationsLoading(false);
+    }
   }, []);
 
   const loadMessages = useCallback(async (id: string) => {
@@ -107,13 +121,24 @@ export default function Home() {
   async function selectChat(id: string) {
     setActiveId(id);
     await loadMessages(id);
+    // Auto-close drawer on mobile after selection
+    if (typeof window !== "undefined" && !window.matchMedia("(min-width: 768px)").matches) {
+      setSidebarOpen(false);
+    }
   }
 
-  async function deleteChat(id: string) {
-    if (!confirm("Delete this conversation?")) return;
-    await fetch(`/api/conversations/${id}`, { method: "DELETE" });
-    setConversations((c) => c.filter((x) => x.id !== id));
-    if (activeId === id) {
+  function deleteChat(id: string) {
+    const target = conversations.find((c) => c.id === id);
+    if (target) setPendingDelete(target);
+  }
+
+  async function confirmDelete() {
+    const target = pendingDelete;
+    if (!target) return;
+    setPendingDelete(null);
+    await fetch(`/api/conversations/${target.id}`, { method: "DELETE" });
+    setConversations((c) => c.filter((x) => x.id !== target.id));
+    if (activeId === target.id) {
       setActiveId(null);
       setMessages([]);
     }
@@ -126,6 +151,26 @@ export default function Home() {
       copy[copy.length - 1] = { ...copy[copy.length - 1], content: text };
       return copy;
     });
+  }
+
+  function markLastError(text: string) {
+    setMessages((m) => {
+      if (m.length === 0) return m;
+      const copy = [...m];
+      copy[copy.length - 1] = { ...copy[copy.length - 1], content: text, errored: true };
+      return copy;
+    });
+  }
+
+  function retryLast() {
+    const last = lastSentRef.current;
+    if (!last || loading) return;
+    // Remove the failed assistant message + the user message we're about to resend
+    setMessages((m) => {
+      if (m.length < 2) return m;
+      return m.slice(0, -2);
+    });
+    send(last.text, last.image);
   }
 
   function startTyper() {
@@ -153,6 +198,7 @@ export default function Home() {
 
   async function send(text: string, image?: ComposerImage) {
     if (loading) return;
+    lastSentRef.current = { text, image };
     let convoId = activeId;
     if (!convoId) {
       const res = await fetch("/api/conversations", {
@@ -204,7 +250,7 @@ export default function Home() {
 
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({ error: "request failed" }));
-        setLastContent(`⚠️ ${data.error}`);
+        markLastError(`⚠️ ${data.error}`);
         return;
       }
 
@@ -252,9 +298,8 @@ export default function Home() {
       }
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
-        targetRef.current = "⚠️ Connection lost";
         streamDoneRef.current = true;
-        setLastContent(targetRef.current);
+        markLastError("⚠️ Connection lost");
       }
     } finally {
       setLoading(false);
@@ -269,8 +314,15 @@ export default function Home() {
 
   if (status === "loading") {
     return (
-      <div className="flex h-screen items-center justify-center" style={{ color: "var(--text-muted)" }}>
-        Loading...
+      <div className="flex h-screen items-center justify-center" role="status" aria-live="polite">
+        <div className="flex flex-col items-center gap-3">
+          <div className="accent-bg pulse-glow flex h-12 w-12 items-center justify-center rounded-2xl">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+          </div>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>Loading…</span>
+        </div>
       </div>
     );
   }
@@ -279,6 +331,7 @@ export default function Home() {
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar
         open={sidebarOpen}
+        loading={conversationsLoading}
         conversations={conversations}
         activeId={activeId}
         onNew={newChat}
@@ -322,10 +375,21 @@ export default function Home() {
           ttsSupported={tts.supported}
           ttsActiveId={tts.speakingId}
           onSpeak={(id, text) => (tts.speakingId === id ? tts.stop() : tts.speak(id, text))}
+          onRetry={retryLast}
         />
 
         <Composer onSend={send} disabled={loading} triggerVoiceCommandAt={triggerVoiceCommandAt} />
       </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Delete this conversation?"
+        message={pendingDelete ? `"${pendingDelete.title}" and all its messages will be removed.` : undefined}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

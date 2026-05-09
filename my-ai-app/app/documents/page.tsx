@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 type Doc = {
   id: string;
@@ -18,6 +19,7 @@ export default function DocumentsPage() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Doc | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -49,9 +51,11 @@ export default function DocumentsPage() {
     load();
   }
 
-  async function remove(id: string) {
-    if (!confirm("Delete this document and its embeddings?")) return;
-    await fetch(`/api/documents/${id}`, { method: "DELETE" });
+  async function confirmRemove() {
+    const target = pendingDelete;
+    if (!target) return;
+    setPendingDelete(null);
+    await fetch(`/api/documents/${target.id}`, { method: "DELETE" });
     load();
   }
 
@@ -105,12 +109,22 @@ export default function DocumentsPage() {
                     {(d.size / 1024).toFixed(1)} KB · {d._count?.chunks ?? d.chunkCount ?? 0} chunks · {new Date(d.createdAt).toLocaleString()}
                   </p>
                 </div>
-                <button onClick={() => remove(d.id)} className="ml-3 text-xs hover:underline" style={{ color: "#fb7185" }}>Delete</button>
+                <button onClick={() => setPendingDelete(d)} className="ml-3 text-xs hover:underline" style={{ color: "#fb7185" }}>Delete</button>
               </div>
             ))
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Delete this document?"
+        message={pendingDelete ? `"${pendingDelete.filename}" and all its embeddings will be removed.` : undefined}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmRemove}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }
