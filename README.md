@@ -36,7 +36,7 @@ authentication, retrieval-augmented generation, and applied AI security**.
 | **Auth** | NextAuth v5, bcrypt password hashing, Google OAuth, JWT sessions, route-level middleware |
 | **Frontend** | Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, streaming SSE chat UI, multi-conversation sidebar |
 | **Backend** | FastAPI, async streaming, Pydantic validation, slowapi rate limiting, security headers |
-| **AI** | Google Gemini 2.0 Flash for chat, `gemini-embedding-001` for retrieval |
+| **AI** | Groq `llama-3.3-70b-versatile` for chat, Jina AI `jina-embeddings-v3` for retrieval |
 | **RAG** | PDF/text upload, fixed-size overlap chunking, cosine top-k retrieval, context injection with citations |
 | **Security** | PII redaction (10+ pattern classes incl. Luhn-validated cards), prompt-injection heuristics with weighted scoring, OWASP Top 10 code scanner, append-only audit log, hardened security headers (CSP-ready, HSTS, X-Frame-Options, etc.) |
 
@@ -70,15 +70,15 @@ authentication, retrieval-augmented generation, and applied AI security**.
                              │ HTTPS, CORS-restricted
 ┌────────────────────────────▼─────────────────────────────────────┐
 │  FastAPI (Python 3.11+)                                          │
-│  ─ /chat              Gemini streaming + injection guard + PII   │
-│  ─ /embed             gemini-embedding-001                       │
+│  ─ /chat              Groq streaming + injection guard + PII     │
+│  ─ /embed             Jina jina-embeddings-v3                    │
 │  ─ /security/pii-scan, /injection-scan                           │
 │  ─ /security/scan-code   OWASP Top 10 (structured JSON)          │
 │  Middleware: slowapi rate-limit, security headers, strict CORS   │
 └──────────────────────────────────────────────────────────────────┘
                              │
                              ▼
-                    Google Gemini API (free tier)
+                Groq API (chat) · Jina AI (embeddings)
 ```
 
 ---
@@ -111,7 +111,7 @@ LLM. Patterns:
 - PEM-encoded private keys
 
 ### 3. OWASP Top 10 code scanner
-Structured-output prompt against Gemini that returns JSON with severity-rated
+Structured-output prompt against Groq that returns JSON with severity-rated
 findings mapped to OWASP categories (A01–A10). Includes the offending snippet,
 explanation, and a concrete fix recommendation. See `app/security-scan/page.tsx`.
 
@@ -137,11 +137,11 @@ and JSON metadata. Viewable at `/audit`.
 
 **Frontend:** Next.js 16, React 19, TypeScript 5, Tailwind 4, NextAuth v5
 
-**Backend:** FastAPI, Pydantic v2, slowapi, uvicorn, google-genai SDK
+**Backend:** FastAPI, Pydantic v2, slowapi, uvicorn, Groq SDK, httpx
 
 **Data:** Prisma 6, Postgres (Supabase) — schema synced via `prisma db push` (pgvector-ready)
 
-**AI:** Gemini 2.0 Flash, gemini-embedding-001
+**AI:** Groq `llama-3.3-70b-versatile`, Jina `jina-embeddings-v3`
 
 ---
 
@@ -150,7 +150,8 @@ and JSON metadata. Viewable at `/audit`.
 ### Prerequisites
 - Node.js 20+
 - Python 3.11+ (the repo runs on 3.9 but issues deprecation warnings)
-- A free Gemini API key from <https://aistudio.google.com/apikey>
+- A free Groq API key from <https://console.groq.com>
+- A free Jina AI API key from <https://jina.ai>
 
 ### 1. Backend (FastAPI)
 
@@ -161,13 +162,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# edit .env and set GEMINI_API_KEY=...
+# edit .env and set GROQ_API_KEY=... and JINA_API_KEY=...
 
 uvicorn main:app --reload --port 8000
 ```
 
 Verify: `curl http://localhost:8000/health` should return
-`{"ok": true, "gemini_configured": true}`.
+`{"ok": true, "groq_configured": true, "jina_configured": true}`.
 
 ### 2. Frontend (Next.js)
 
@@ -194,7 +195,8 @@ Open <http://localhost:3000> → register an account → start chatting.
 | **Vercel** | Next.js frontend + API routes | Generous hobby tier |
 | **Render** (or Fly.io) | FastAPI backend | 750 hr/month free (sleeps after idle) |
 | **Supabase** | Postgres + pgvector | 500 MB DB, 50 k monthly active users |
-| **Google AI Studio** | Gemini API | 15 RPM, 1500 req/day |
+| **Groq** | Chat LLM | 14,400 req/day (`llama-3.3-70b-versatile`) |
+| **Jina AI** | Embeddings | 1M tokens/month (`jina-embeddings-v3`) |
 
 ### Database setup
 

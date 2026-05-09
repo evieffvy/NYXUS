@@ -3,8 +3,8 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
-# Patch Gemini client before importing app
-with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+# Patch Groq client before importing app
+with patch.dict("os.environ", {"GROQ_API_KEY": "test-key", "JINA_API_KEY": "test-key"}):
     from main import app
 
 client = TestClient(app)
@@ -37,6 +37,6 @@ def test_injection_scan_blocked():
     assert res.json()["blocked"] is True
 
 def test_chat_no_api_key():
-    with patch("main.app.state.genai_client", None):
-        res = client.post("/chat", json={"message": "Hello", "history": []})
+    app.state.groq_client = None
+    res = client.post("/chat", json={"message": "Hello", "history": []})
     assert res.status_code == 503
