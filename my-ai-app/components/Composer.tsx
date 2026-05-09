@@ -142,7 +142,7 @@ export function Composer({
           <input ref={fileRef} type="file" accept={ALLOWED.join(",")} onChange={pickImage} className="hidden" id="composer-image" />
           <label
             htmlFor="composer-image"
-            className="flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-105"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-105"
             style={{ background: "var(--glass-soft)", color: "var(--text-soft)", border: "1px solid var(--border-soft)" }}
             title="Attach image"
           >
@@ -154,7 +154,7 @@ export function Composer({
           <button
             type="button"
             onClick={toggleMic}
-            className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 ${listening ? "pulse-glow" : ""}`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 ${listening ? "pulse-glow" : ""}`}
             style={{
               background: listening ? "rgba(244,63,94,0.18)" : "var(--glass-soft)",
               color: listening ? "#fb7185" : "var(--text-soft)",
@@ -193,7 +193,7 @@ export function Composer({
           <button
             onClick={submit}
             disabled={disabled || (!value.trim() && !image)}
-            className="accent-bg flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 disabled:opacity-40"
+            className="accent-bg flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 disabled:opacity-40"
             aria-label="Send"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white">

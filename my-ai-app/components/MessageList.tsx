@@ -114,7 +114,7 @@ function MessageBubble({
   return (
     <div className={`flex items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
       {!isUser && (
-        <div className="accent-bg mb-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+        <div className="accent-bg mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
           <NyxLogo size={16} />
         </div>
       )}
@@ -209,7 +209,7 @@ function MessageBubble({
 function TypingCursor() {
   return (
     <span
-      className="ml-0.5 inline-block h-3.5 w-[2px] align-text-bottom"
+      className="ml-0.5 inline-block h-3.5 w-0.5 align-text-bottom"
       style={{ background: "var(--accent-strong)", animation: "blink 0.9s steps(2) infinite" }}
     />
   );

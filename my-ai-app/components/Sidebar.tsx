@@ -117,7 +117,7 @@ export function Sidebar(props: {
           <NavLink href="/audit" icon="📊" label="Audit Log" />
           <div className="mt-2 flex items-center justify-between gap-2 border-t pt-2" style={{ borderColor: "var(--border-soft)" }}>
             <span className="truncate" style={{ color: "var(--text-soft)" }}>{props.userEmail}</span>
-            <button onClick={props.onSignOut} className="flex-shrink-0 hover:underline" style={{ color: "var(--accent-strong)" }}>Sign out</button>
+            <button onClick={props.onSignOut} className="shrink-0 hover:underline" style={{ color: "var(--accent-strong)" }}>Sign out</button>
           </div>
         </div>
       </aside>
@@ -143,7 +143,7 @@ function NavLink({ href, icon, label }: { href: string; icon: string; label: str
   return (
     <Link
       href={href}
-      className="block rounded-lg px-2 py-1.5 transition-colors hover:bg-[color:var(--glass-soft)]"
+      className="block rounded-lg px-2 py-1.5 transition-colors hover:bg-(--glass-soft)"
       style={{ color: "var(--text-soft)" }}
     >
       <span className="mr-2" aria-hidden>{icon}</span>{label}
